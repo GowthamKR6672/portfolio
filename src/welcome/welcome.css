@@ -1,0 +1,595 @@
+/* Welcome / "choose your world" screen. The whole screen re-skins to preview
+   whichever world is hovered: .wel--neon, .wel--studio, .wel--orbit. */
+
+.wel {
+  --wbg: #05060a;
+  --wt: #eceef6;
+  --wm: #9aa1b8;
+  --wacc: #22d3ee;
+  --wcard: rgba(255, 255, 255, 0.05);
+  --wborder: rgba(255, 255, 255, 0.12);
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--wbg);
+  color: var(--wt);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background 0.8s ease, color 0.8s ease;
+}
+.wel--studio {
+  --wbg: #d5cfbe;
+  --wt: #0d0d0c;
+  --wm: rgba(13, 13, 12, 0.66);
+  --wacc: #0d0d0c;
+  --wcard: rgba(235, 234, 218, 0.72);
+  --wborder: rgba(0, 0, 0, 0.1);
+}
+.wel--orbit {
+  --wbg: #02040a;
+  --wt: #f2f4f5;
+  --wm: #9aa3ad;
+  --wacc: #9ad9ff;
+  --wcard: rgba(255, 255, 255, 0.04);
+  --wborder: rgba(255, 255, 255, 0.16);
+}
+
+/* background layers, one per world */
+.wel__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.wel__layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.wel--neon .wel__layer--neon,
+.wel--studio .wel__layer--studio,
+.wel--orbit .wel__layer--orbit {
+  opacity: 1;
+}
+.wn-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: wel-drift 14s ease-in-out infinite alternate;
+}
+.wn-glow--a {
+  width: 46vw;
+  height: 46vw;
+  left: -6vw;
+  top: 10vh;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.45), transparent 65%);
+}
+.wn-glow--b {
+  width: 40vw;
+  height: 40vw;
+  right: -4vw;
+  bottom: -10vh;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.32), transparent 65%);
+  animation-delay: -6s;
+}
+.wn-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(165, 180, 252, 0.35) 1px, transparent 1.5px);
+  background-size: 34px 34px;
+  mask-image: radial-gradient(ellipse at 30% 50%, #000 10%, transparent 70%);
+  animation: wel-dots 30s linear infinite;
+}
+@keyframes wel-drift {
+  to {
+    transform: translate(4vw, -3vh) scale(1.08);
+  }
+}
+@keyframes wel-dots {
+  to {
+    background-position: 34px 68px;
+  }
+}
+.ws-name {
+  position: absolute;
+  top: 1vh;
+  left: 0;
+  right: 0;
+  text-align: center;
+  /* longhand on purpose: the minifier folds font-stretch into an invalid shorthand */
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 21vw;
+  line-height: 0.8;
+  font-stretch: 75%;
+  color: #ffff23;
+  letter-spacing: -0.01em;
+}
+.wo-stars {
+  position: absolute;
+  inset: -50%;
+  background-image: radial-gradient(1px 1px at 20px 30px, #fff, transparent), radial-gradient(1px 1px at 120px 80px, #cfe9ff, transparent),
+    radial-gradient(1.5px 1.5px at 60px 150px, #fff, transparent), radial-gradient(1px 1px at 170px 190px, #fff, transparent);
+  background-size: 200px 200px;
+  opacity: 0.7;
+  animation: wel-stars 120s linear infinite;
+}
+.wo-stars--far {
+  background-size: 120px 120px;
+  opacity: 0.35;
+  animation-duration: 200s;
+}
+@keyframes wel-stars {
+  to {
+    transform: translate(200px, 100px);
+  }
+}
+
+/* top bar */
+.wel__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 5vw;
+}
+.wel__logo {
+  font: 600 18px 'Space Grotesk', sans-serif;
+}
+.wel__logo span {
+  color: var(--wm);
+}
+.wel__meta {
+  font: 500 11px 'JetBrains Mono', monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--wm);
+}
+
+/* layout */
+.wel__main {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  align-items: center;
+  min-height: 100svh;
+  padding: 0 5vw;
+}
+
+/* the character */
+.wel__stage {
+  position: relative;
+  height: 100svh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.wel__platform {
+  position: absolute;
+  left: 50%;
+  bottom: 4.2svh;
+  translate: -50% 0;
+  width: 300px;
+  height: 56px;
+  border-radius: 50%;
+  transition: all 0.8s ease;
+}
+.wel--neon .wel__platform {
+  border: 2px solid rgba(34, 211, 238, 0.7);
+  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.45), transparent 70%);
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.45), inset 0 0 30px rgba(139, 92, 246, 0.45);
+}
+.wel--studio .wel__platform {
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.35), transparent 70%);
+}
+.wel--orbit .wel__platform {
+  width: 170vh;
+  height: 170vh;
+  bottom: auto;
+  top: calc(100svh - 9svh);
+  background: radial-gradient(circle at 50% 4%, #7fc2ff 0%, #2a6fb5 6%, #0f3b6e 22%, #061a33 45%, #02060d 70%);
+  box-shadow: 0 -10px 60px rgba(77, 166, 255, 0.65), 0 -2px 0 rgba(160, 210, 255, 0.8);
+}
+.wel__me {
+  position: relative;
+  z-index: 2;
+  height: min(84svh, 880px);
+  aspect-ratio: 681 / 1520;
+  margin-bottom: 5svh;
+}
+.wel__float {
+  width: 100%;
+  height: 100%;
+  transform: perspective(1200px) rotateY(calc(var(--mx, 0) * 12deg)) rotateX(calc(var(--my, 0) * -4deg)) translateX(calc(var(--mx, 0) * -16px));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wel__float img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: wel-bob 5s ease-in-out infinite;
+  filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.35));
+}
+@keyframes wel-bob {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* intro copy */
+.wel__intro {
+  max-width: 580px;
+  padding: 90px 0 40px;
+}
+.wel__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font: 500 12px 'JetBrains Mono', monospace;
+  color: var(--wm);
+}
+.wel__live {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+}
+.wel__live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: wel-ping 1.8s ease-out infinite;
+}
+@keyframes wel-ping {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.wel__name {
+  margin: 14px 0 12px;
+  font: 700 clamp(46px, 6vw, 92px) / 0.95 'Space Grotesk', sans-serif;
+  letter-spacing: -0.045em;
+  transition: color 0.8s;
+}
+.wel--studio .wel__name {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.wel--orbit .wel__name {
+  font-family: 'General Sans', sans-serif;
+  font-weight: 300;
+  font-size: clamp(38px, 4.9vw, 78px);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+.wel__name {
+  white-space: nowrap;
+}
+.wel__role {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.wel__role span {
+  font-weight: 500;
+  color: var(--wm);
+}
+.wel__role em {
+  font: 500 13px 'JetBrains Mono', monospace;
+  font-style: normal;
+  color: var(--wm);
+}
+.wel__about {
+  max-width: 500px;
+  margin: 18px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--wm);
+}
+.wel__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wel__facts li {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--wborder);
+  background: var(--wcard);
+  font-size: 13px;
+  transition: background 0.8s, border-color 0.8s;
+}
+.wel__facts b {
+  color: var(--wacc);
+}
+.wel--studio .wel__facts b {
+  background: #ffff23;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.wel__choose {
+  margin: 34px 0 14px;
+  font: 600 12px 'JetBrains Mono', monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--wm);
+}
+
+/* world cards */
+.wel__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.wcard {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 16px;
+  border: 1px solid var(--wborder);
+  background: var(--wcard);
+  backdrop-filter: blur(10px);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s, box-shadow 0.45s, background 0.8s;
+}
+.wcard:hover,
+.wcard.is-on {
+  transform: translateY(-6px);
+  border-color: var(--wacc);
+  box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.6);
+}
+.wcard:focus-visible {
+  outline: 2px solid var(--wacc);
+  outline-offset: 3px;
+}
+.wcard__body {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px 14px;
+}
+.wcard__name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font: 700 16px 'Space Grotesk', sans-serif;
+}
+.wcard__name small {
+  font: 600 8.5px 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--wborder);
+  color: var(--wm);
+}
+.wcard__hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--wm);
+}
+.wcard__go {
+  margin-top: 4px;
+  font: 600 11px 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* mini previews */
+.wcard__art {
+  position: relative;
+  display: block;
+  height: 118px;
+  overflow: hidden;
+}
+.wcard__art i,
+.wcard__art b {
+  position: absolute;
+  display: block;
+}
+.wcard__art--neon {
+  background: #05060a;
+}
+.n-glow {
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.5), transparent 55%), radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.35), transparent 40%);
+}
+.n-ring {
+  left: 50%;
+  top: 50%;
+  width: 110px;
+  height: 36px;
+  margin: -18px 0 0 -55px;
+  border-radius: 50%;
+  border: 1.5px solid #22d3ee;
+  animation: wel-spin 6s linear infinite;
+}
+.n-ring--b {
+  border-color: #8b5cf6;
+  transform: rotate(60deg);
+  animation-duration: 7s;
+}
+.n-ring--c {
+  border-color: #f472b6;
+  transform: rotate(-60deg);
+  animation-duration: 8s;
+}
+@keyframes wel-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+.n-core {
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #22d3ee 40%, #8b5cf6);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.9);
+}
+.wcard__art--studio {
+  background: #d5cfbe;
+}
+.s-name {
+  left: 8px;
+  right: 8px;
+  top: 6px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 0.8;
+  font-stretch: 75%;
+  color: #ffff23;
+  text-align: center;
+}
+.s-body {
+  left: 50%;
+  bottom: 0;
+  width: 74px;
+  height: 58px;
+  margin-left: -37px;
+  border-radius: 40px 40px 0 0;
+  background: #1a1a18;
+}
+.s-body::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -30px;
+  width: 30px;
+  height: 34px;
+  margin-left: -15px;
+  border-radius: 50%;
+  background: #8a5a3c;
+}
+.s-pill {
+  left: 12px;
+  bottom: 14px;
+  width: 38px;
+  height: 12px;
+  border-radius: 3px;
+  background: #ffff23;
+}
+.s-side {
+  right: 10px;
+  top: 52px;
+  width: 26px;
+  height: 52px;
+  border-radius: 5px;
+  background: rgba(235, 234, 218, 0.95);
+  box-shadow: inset 0 8px 0 #ffff23;
+}
+.wcard__art--orbit {
+  background: #02040a;
+}
+.o-stars {
+  inset: 0;
+  background-image: radial-gradient(1px 1px at 12px 18px, #fff, transparent), radial-gradient(1px 1px at 60px 40px, #fff, transparent),
+    radial-gradient(1px 1px at 110px 22px, #cfe9ff, transparent), radial-gradient(1px 1px at 150px 70px, #fff, transparent);
+  background-size: 170px 100px;
+}
+.o-earth {
+  left: -40px;
+  top: 64px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 10%, #8ecbff, #2a6fb5 12%, #0c2f5c 40%, #020611 70%);
+  box-shadow: 0 -6px 26px rgba(77, 166, 255, 0.7);
+}
+.o-title {
+  left: 0;
+  right: 0;
+  top: 24px;
+  text-align: center;
+  font: 300 18px 'General Sans', sans-serif;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+.o-btn {
+  left: 50%;
+  top: 54px;
+  width: 52px;
+  height: 12px;
+  margin-left: -26px;
+  background: #f2f4f5;
+}
+.wel__note {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: var(--wm);
+}
+
+@media (max-width: 900px) {
+  .wel__main {
+    grid-template-columns: 1fr;
+    padding: 0 18px;
+  }
+  .wel__stage {
+    height: 60svh;
+    overflow: hidden; /* keeps Orbit's planet behind the character, not over the copy */
+  }
+  .wel__me {
+    height: 52svh;
+    margin-bottom: 3svh;
+  }
+  .wel__platform {
+    bottom: 2svh;
+    width: 220px;
+    height: 42px;
+  }
+  .wel--orbit .wel__platform {
+    width: 140vh;
+    height: 140vh;
+    top: calc(60svh - 7svh);
+  }
+  .wel__intro {
+    padding: 10px 0 60px;
+  }
+  .wel__cards {
+    grid-template-columns: 1fr;
+  }
+  .wcard {
+    flex-direction: row;
+  }
+  .wcard__art {
+    flex: none;
+    width: 128px;
+    height: auto;
+    min-height: 104px;
+  }
+  .ws-name {
+    font-size: 23vw;
+    top: 9svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wel *,
+  .wel *::before,
+  .wel *::after {
+    animation: none !important;
+  }
+}

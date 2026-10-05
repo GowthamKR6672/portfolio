@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { buildShapes, layoutFor, PALETTE } from './shapes.js'
+import { WORLD_THEMES } from './themes.js'
 import { particleFragment, particleVertex } from './particleShaders.js'
 import { isNarrow, world } from './store.js'
 
-export default function Particles({ count }) {
+export default function Particles({ count, theme = 'neon' }) {
+  const look = WORLD_THEMES[theme]
   const mat = useRef()
   const { size, gl } = useThree()
 
@@ -43,13 +45,18 @@ export default function Particles({ count }) {
   // the material's own uniforms rather than the object passed in.
   useEffect(() => {
     const u = mat.current.uniforms
-    layout.current = layoutFor(isNarrow())
+    const narrow = isNarrow()
+    layout.current = layoutFor(narrow).map((l, k) => (!narrow && look.layout?.[k]) || l)
     layout.current.forEach(([x, y, z, s], k) => u.uLayout.value[k].set(x, y, z, s))
     u.uPixelRatio.value = gl.getPixelRatio()
-    u.uSize.value = isNarrow() ? 4.6 : 5.5
+    u.uSize.value = (isNarrow() ? 4.6 : 5.5) * look.size
     // Text sits over the particles on small screens, so tone them down there.
-    u.uDim.value = isNarrow() ? 0.55 : 1
-  }, [size, gl])
+    u.uDim.value = (isNarrow() ? 0.55 : 1) * look.dim
+    look.palette.forEach(([a, b], k) => {
+      u.uColA.value[k].set(a)
+      u.uColB.value[k].set(b)
+    })
+  }, [size, gl, look])
 
   useFrame((state, dt) => {
     const u = mat.current.uniforms
@@ -73,7 +80,7 @@ export default function Particles({ count }) {
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={look.blending === 'normal' ? THREE.NormalBlending : THREE.AdditiveBlending}
       />
     </points>
   )

@@ -4,21 +4,22 @@ import * as THREE from 'three'
 import { sphereSkills } from '../data/resume.js'
 import { layoutFor } from './shapes.js'
 import { isNarrow, world } from './store.js'
+import { WORLD_THEMES } from './themes.js'
 
 const W = 192
 const H = 240
 
-function drawBadge(canvas, skill, img) {
+function drawBadge(canvas, skill, img, look = WORLD_THEMES.neon.badge) {
   const ctx = canvas.getContext('2d')
   ctx.clearRect(0, 0, W, H)
   ctx.beginPath()
   ctx.arc(96, 92, 80, 0, Math.PI * 2)
-  ctx.fillStyle = 'rgba(10,12,22,0.92)'
+  ctx.fillStyle = look.fill
   ctx.fill()
   const g = ctx.createLinearGradient(16, 12, 176, 172)
-  g.addColorStop(0, '#22d3ee')
-  g.addColorStop(0.55, '#8b5cf6')
-  g.addColorStop(1, '#f472b6')
+  g.addColorStop(0, look.ring[0])
+  g.addColorStop(0.55, look.ring[1])
+  g.addColorStop(1, look.ring[2])
   ctx.lineWidth = 5
   ctx.strokeStyle = g
   ctx.stroke()
@@ -29,12 +30,12 @@ function drawBadge(canvas, skill, img) {
     ctx.restore()
   } else {
     ctx.font = '600 52px "JetBrains Mono", monospace'
-    ctx.fillStyle = '#22d3ee'
+    ctx.fillStyle = look.ring[0]
     ctx.textAlign = 'center'
     ctx.fillText(skill.glyph || skill.name.slice(0, 2), 96, 110)
   }
   ctx.font = '600 28px "Space Grotesk", system-ui, sans-serif'
-  ctx.fillStyle = '#eceef6'
+  ctx.fillStyle = look.text
   ctx.textAlign = 'center'
   ctx.fillText(skill.name, 96, 228)
 }
@@ -51,7 +52,7 @@ async function loadIcon(url) {
   return img
 }
 
-export default function SkillOrbit() {
+export default function SkillOrbit({ theme = 'neon' }) {
   const group = useRef()
   const spin = useRef(0)
   const sprites = useRef([])
@@ -78,17 +79,22 @@ export default function SkillOrbit() {
     })
   }, [items])
 
+  const look = useRef(WORLD_THEMES[theme].badge)
+  const redraw = (it) => {
+    drawBadge(it.canvas, it.skill, it.img, look.current)
+    it.tex.needsUpdate = true
+  }
+
   useEffect(() => {
     let alive = true
-    document.fonts?.ready.then(() => alive && items.forEach((it) => !it.loaded && (drawBadge(it.canvas, it.skill), (it.tex.needsUpdate = true))))
+    document.fonts?.ready.then(() => alive && items.forEach(redraw))
     items.forEach((it) => {
       if (!it.skill.icon) return
       loadIcon(it.skill.icon)
         .then((img) => {
           if (!alive) return
-          it.loaded = true
-          drawBadge(it.canvas, it.skill, img)
-          it.tex.needsUpdate = true
+          it.img = img
+          redraw(it)
         })
         .catch(() => {})
     })
@@ -96,6 +102,12 @@ export default function SkillOrbit() {
       alive = false
     }
   }, [items])
+
+  // Restyle the badges when the theme changes.
+  useEffect(() => {
+    look.current = WORLD_THEMES[theme].badge
+    items.forEach(redraw)
+  }, [theme, items])
 
   useFrame(({ clock }, dt) => {
     const w = Math.max(0, 1 - Math.abs(world.section - 2) * 1.4)

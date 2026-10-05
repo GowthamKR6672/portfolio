@@ -1,56 +1,67 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import Lenis from 'lenis'
-import Loader from './components/Loader.jsx'
-import Cursor from './components/Cursor.jsx'
-import ScrollProgress from './components/ScrollProgress.jsx'
-import Nav from './components/Nav.jsx'
-import Hero from './components/Hero.jsx'
-import About from './components/About.jsx'
-import Skills from './components/Skills.jsx'
-import Experience from './components/Experience.jsx'
-import Projects from './components/Projects.jsx'
-import GitHubWork from './components/GitHubWork.jsx'
-import Education from './components/Education.jsx'
-import Contact from './components/Contact.jsx'
-import Footer from './components/Footer.jsx'
+import { flushSync } from 'react-dom'
+import Welcome from './welcome/Welcome.jsx'
 import { prefersReducedMotion } from './lib/motion.js'
+import { initialTheme, savedTheme, saveTheme } from './lib/theme.js'
 
-// The full-screen WebGL world loads in parallel with the page content.
-const World = lazy(() => import('./three/World.jsx'))
+// Each theme is a whole site of its own; only the active one is loaded.
+const LOADERS = {
+  neon: () => import('./sites/neon/NeonSite.jsx'),
+  studio: () => import('./sites/studio/StudioSite.jsx'),
+  orbit: () => import('./sites/orbit/OrbitSite.jsx'),
+}
+const SITES = Object.fromEntries(Object.entries(LOADERS).map(([k, load]) => [k, lazy(load)]))
+
+// Runs a state change behind a circular reveal from the click point, where supported.
+function reveal(apply, e) {
+  if (!document.startViewTransition || prefersReducedMotion()) return apply()
+  const root = document.documentElement
+  root.style.setProperty('--vt-x', `${e?.clientX ?? window.innerWidth - 120}px`)
+  root.style.setProperty('--vt-y', `${e?.clientY ?? 30}px`)
+  // A quick second click shouldn't wait on the previous reveal.
+  window.__themeTransition?.skipTransition()
+  const t = document.startViewTransition(apply)
+  // The browser may abort the animation (e.g. the mobile viewport resizes); the switch still happens.
+  t.ready.catch(() => {})
+  t.finished.catch(() => {})
+  window.__themeTransition = t
+}
 
 export default function App() {
-  const [ready, setReady] = useState(false)
+  const [theme, setTheme] = useState(initialTheme)
+  // Every visit starts on the welcome screen; the last world chosen is pre-selected there.
+  const [entered, setEntered] = useState(false)
 
   useEffect(() => {
-    if (prefersReducedMotion()) return
-    const lenis = new Lenis({ autoRaf: true, lerp: 0.09 })
-    window.__lenis = lenis
-    return () => {
-      lenis.destroy()
-      window.__lenis = null
-    }
-  }, [])
+    document.documentElement.dataset.theme = entered ? theme : 'welcome'
+    if (entered) saveTheme(theme)
+  }, [theme, entered])
 
+  const enter = (id, e) =>
+    reveal(() => {
+      flushSync(() => {
+        setTheme(id)
+        setEntered(true)
+      })
+      document.documentElement.dataset.theme = id
+      window.scrollTo(0, 0)
+    }, e)
+
+  const changeTheme = (id, e) => {
+    if (id === theme) return
+    reveal(() => {
+      flushSync(() => setTheme(id))
+      document.documentElement.dataset.theme = id
+      window.scrollTo(0, 0)
+    }, e)
+  }
+
+  if (!entered) return <Welcome current={savedTheme()} onPick={enter} onPreload={(id) => LOADERS[id]()} />
+
+  const Site = SITES[theme]
   return (
-    <>
-      <Suspense fallback={null}>
-        <World />
-      </Suspense>
-      <Loader onDone={() => setReady(true)} />
-      <Cursor />
-      <ScrollProgress />
-      <Nav />
-      <main>
-        <Hero ready={ready} />
-        <About />
-        <Skills />
-        <Experience />
-        <Projects />
-        <GitHubWork />
-        <Education />
-        <Contact />
-      </main>
-      <Footer />
-    </>
+    <Suspense fallback={<div className="site-fallback" />}>
+      <Site theme={theme} onTheme={changeTheme} />
+    </Suspense>
   )
 }

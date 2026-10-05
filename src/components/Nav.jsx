@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { scrollToId, ease } from '../lib/motion.js'
 import { profile } from '../data/resume.js'
+import ThemeSwitcher from './ThemeSwitcher.jsx'
 
 const links = [
   ['about', 'About'],
@@ -12,7 +13,7 @@ const links = [
   ['education', 'Education'],
 ]
 
-export default function Nav() {
+export default function Nav({ theme, onTheme }) {
   const [active, setActive] = useState('home')
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -64,13 +65,16 @@ export default function Nav() {
               </a>
             ))}
           </nav>
-          <a href="#contact" onClick={go('contact')} className="btn btn--sm btn--primary nav__cta">
-            Let's talk
-          </a>
-          <button className={`nav__burger ${open ? 'is-open' : ''}`} onClick={() => setOpen((o) => !o)} aria-label="Menu" aria-expanded={open}>
-            <span />
-            <span />
-          </button>
+          <div className="nav__right">
+            <ThemeSwitcher theme={theme} onChange={onTheme} />
+            <a href="#contact" onClick={go('contact')} className="btn btn--sm btn--primary nav__cta">
+              Let's talk
+            </a>
+            <button className={`nav__burger ${open ? 'is-open' : ''}`} onClick={() => setOpen((o) => !o)} aria-label="Menu" aria-expanded={open}>
+              <span />
+              <span />
+            </button>
+          </div>
         </div>
       </header>
 

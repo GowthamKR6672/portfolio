@@ -4,6 +4,7 @@ import { Float, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { createScreens } from './screens.js'
 import { isNarrow, world } from './store.js'
+import { WORLD_THEMES } from './themes.js'
 
 const screenVertex = /* glsl */ `
 varying vec2 vUv;
@@ -95,13 +96,13 @@ function logoTexture() {
   return t
 }
 
-function glowTexture() {
+function glowTexture([inner, outer]) {
   const c = document.createElement('canvas')
   c.width = c.height = 256
   const ctx = c.getContext('2d')
   const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128)
-  g.addColorStop(0, 'rgba(139,92,246,0.9)')
-  g.addColorStop(0.4, 'rgba(34,211,238,0.35)')
+  g.addColorStop(0, inner)
+  g.addColorStop(0.4, outer)
   g.addColorStop(1, 'rgba(0,0,0,0)')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 256, 256)
@@ -111,7 +112,7 @@ function glowTexture() {
 const ease = (x) => 1 - Math.pow(1 - x, 3)
 const clamp01 = (x) => Math.min(1, Math.max(0, x))
 
-export default function Devices() {
+export default function Devices({ theme = 'neon' }) {
   const group = useRef()
   const lid = useRef()
   const glow = useRef()
@@ -121,7 +122,7 @@ export default function Devices() {
   const tex = useMemo(() => ({ laptop: screens.laptop.map(toTexture), phone: screens.phone.map(toTexture) }), [screens])
   const keyboard = useMemo(keyboardTexture, [])
   const logo = useMemo(logoTexture, [])
-  const glowMap = useMemo(glowTexture, [])
+  const glowMap = useMemo(() => glowTexture(WORLD_THEMES[theme].glow), [theme])
   const laptopU = useMemo(() => ({ uA: { value: tex.laptop[0] }, uB: { value: tex.laptop[0] }, uMix: { value: 1 }, uTime: { value: 0 }, uPower: { value: 0 } }), [tex])
   const phoneU = useMemo(() => ({ uA: { value: tex.phone[0] }, uB: { value: tex.phone[0] }, uMix: { value: 1 }, uTime: { value: 0 }, uPower: { value: 0 } }), [tex])
   const s = useRef({ from: 0, to: 0, mix: 1, acc: 0 })

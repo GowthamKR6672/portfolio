@@ -9,6 +9,8 @@ export const profile = {
   github: 'https://github.com/Gowtham-KR6672',
   githubUser: 'Gowtham-KR6672',
   resume: '/Gowtham_KR_Resume.docx',
+  // Transparent cut-out portrait for the Studio hero (set to '' to use the 3D "G" instead).
+  photo: '/me-cartoon-bust.webp',
   current: { role: 'Process Analyst', company: 'I-Cons Technologies' },
   lead:
     'I build real-time business apps — GPS driver tracking, productivity dashboards, billing and attendance systems — and automate the processes behind them.',

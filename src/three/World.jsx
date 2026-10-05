@@ -7,6 +7,7 @@ import Particles from './Particles.jsx'
 import Devices from './Devices.jsx'
 import SkillOrbit from './SkillOrbit.jsx'
 import { SECTION_IDS, isNarrow, world } from './store.js'
+import { WORLD_THEMES } from './themes.js'
 import { pointer, prefersReducedMotion } from '../lib/motion.js'
 
 const smooth = (a, b, x) => {
@@ -92,6 +93,8 @@ function Ready() {
 }
 
 export default function World() {
+  const look = WORLD_THEMES.neon
+
   const narrow = isNarrow()
   const reduced = prefersReducedMotion()
   const [dpr, setDpr] = useState(1.5)
@@ -104,7 +107,7 @@ export default function World() {
         frameloop={reduced ? 'demand' : 'always'}
         gl={{ antialias: narrow, powerPreference: 'high-performance', alpha: false }}
       >
-        <color attach="background" args={['#05060a']} />
+        <color attach="background" args={[look.bg]} />
         <PerformanceMonitor onDecline={() => setDpr(1)} />
         <ScrollDriver />
         <MouseRig />
@@ -119,7 +122,7 @@ export default function World() {
           <Lightformer form="rect" intensity={5} color="#f472b6" position={[6, 0, 2]} rotation-y={-Math.PI / 2} scale={[5, 6, 1]} />
           <Lightformer form="ring" intensity={3} color="#8b5cf6" position={[0, 2, -8]} scale={6} />
         </Environment>
-        {!narrow && (
+        {!narrow && look.bloom && (
           <EffectComposer multisampling={4}>
             <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.18} luminanceSmoothing={0.25} radius={0.75} />
             <Vignette offset={0.25} darkness={0.75} />
